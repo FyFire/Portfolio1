@@ -2,6 +2,8 @@
 const photoGrid = document.querySelector('.photo-grid');
 const fullsizeContainer = document.getElementById('fullsize-container');
 const fullsizeImage = document.getElementById('fullsize-image');
+const API_KEY = '70374420f23348a182d8884032ebd906';
+const ACCESS_TOKEN = 'p8e-WoXNH1o_7AiliumVSQzu3rijNtbNYtwU';
 
 // Photo Data
 const photos = Array(400).fill().map(() => ({
@@ -128,17 +130,13 @@ function hideFullsizeImage() {
 }
 
 async function fetchLightroomPhotos() {
-    if (!accessToken) {
-        console.error('No access token available');
-        return;
-    }
-
     try {
+        // Get catalogs
         const response = await fetch('https://lr.adobe.io/v2/catalogs', {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'X-API-Key': clientId,
-            },
+                'Authorization': `Bearer ${ACCESS_TOKEN}`,
+                'X-API-Key': API_KEY,
+            }
         });
 
         if (!response.ok) {
@@ -148,11 +146,12 @@ async function fetchLightroomPhotos() {
         const data = await response.json();
         const catalogId = data.resources[0].id;
 
+        // Get assets
         const assetsResponse = await fetch(`https://lr.adobe.io/v2/catalogs/${catalogId}/assets?limit=400`, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'X-API-Key': clientId,
-            },
+                'Authorization': `Bearer ${ACCESS_TOKEN}`,
+                'X-API-Key': API_KEY,
+            }
         });
 
         if (!assetsResponse.ok) {
@@ -173,9 +172,11 @@ async function fetchLightroomPhotos() {
     }
 }
 
+
 // Event Listeners
 createPhotoElements();
 photoGrid.addEventListener('mousemove', handleMouseMove);
 photoGrid.addEventListener('mouseleave', handleMouseLeave);
 photoGrid.addEventListener('click', showFullsizeImage);
 fullsizeContainer.addEventListener('click', hideFullsizeImage);
+document.addEventListener('DOMContentLoaded', fetchLightroomPhotos);
