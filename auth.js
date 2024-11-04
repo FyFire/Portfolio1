@@ -1,6 +1,6 @@
 // auth.js
-const clientId = '7a992ac4eb154acbbd2fc2dda7bb4915'; // Your Adobe API client ID
-const redirectUri = 'https://fyfire.github.io/Portfolio1/'; // Your GitHub Pages URL
+const clientId = '7a992ac4eb154acbbd2fc2dda7bb4915'; // This should be your client ID
+const redirectUri = 'https://fyfire.github.io/Portfolio1/';
 const scope = 'openid,lr_partner_apis';
 
 function getAuthUrl() {
@@ -13,7 +13,7 @@ function getAuthUrl() {
         + `&scope=${encodeURIComponent(scope)}`
         + `&response_type=token`
         + `&state=${state}`
-        + `&response_mode=fragment`; // Added this line
+        + `&response_mode=fragment`;
     
     return authUrl;
 }
