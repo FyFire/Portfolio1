@@ -7,13 +7,13 @@ function getAuthUrl() {
     const state = generateRandomState();
     localStorage.setItem('oauth_state', state);
     
-    // Updated authorization URL with correct parameters
     const authUrl = `https://ims-na1.adobelogin.com/ims/authorize/v2`
         + `?client_id=${clientId}`
         + `&redirect_uri=${encodeURIComponent(redirectUri)}`
         + `&scope=${encodeURIComponent(scope)}`
         + `&response_type=token`
-        + `&state=${state}`; // Removed response_mode parameter
+        + `&state=${state}`
+        + `&response_mode=fragment`; // Added this line
     
     return authUrl;
 }
