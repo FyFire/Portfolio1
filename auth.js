@@ -1,6 +1,6 @@
 // auth.js
-const clientId = '7a992ac4eb154acbbd2fc2dda7bb4915'; // Replace with your actual client ID
-const redirectUri = 'https://fyfire.github.io/Portfolio1/'; // Replace with your actual GitHub Pages URL
+const clientId = '7a992ac4eb154acbbd2fc2dda7bb4915'; // Your Adobe API client ID
+const redirectUri = 'https://fyfire.github.io/Portfolio1/'; // Your GitHub Pages URL
 const scope = 'openid,lr_partner_apis';
 
 function getAuthUrl() {
@@ -13,33 +13,33 @@ function getAuthUrl() {
         + `&redirect_uri=${encodeURIComponent(redirectUri)}`
         + `&scope=${encodeURIComponent(scope)}`
         + `&response_type=token`
-        + `&state=${state}`
-        + `&response_mode=hash`;
+        + `&state=${state}`; // Removed response_mode parameter
     
     return authUrl;
 }
 
 function generateRandomState() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return Math.random().toString(36).substring(2, 15);
 }
 
 function handleAuthRedirect() {
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    const accessToken = params.get('access_token');
-    const state = params.get('state');
-
-    if (state !== localStorage.getItem('oauth_state')) {
-        console.error('Invalid state parameter');
-        return null;
+    const hash = window.location.hash;
+    if (hash) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get('access_token');
+        const state = params.get('state');
+        
+        // Verify state
+        const savedState = localStorage.getItem('oauth_state');
+        if (state !== savedState) {
+            console.error('State mismatch');
+            return null;
+        }
+        
+        if (accessToken) {
+            localStorage.setItem('access_token', accessToken);
+            return accessToken;
+        }
     }
-
-    localStorage.removeItem('oauth_state');
-
-    if (accessToken) {
-        localStorage.setItem('access_token', accessToken);
-        return accessToken;
-    }
-
     return null;
 }
