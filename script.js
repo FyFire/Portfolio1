@@ -2,6 +2,8 @@
 const photoGrid = document.querySelector('.photo-grid');
 const fullsizeContainer = document.getElementById('fullsize-container');
 const fullsizeImage = document.getElementById('fullsize-image');
+const loginButton = document.getElementById('login-button');
+let accessToken = localStorage.getItem('access_token');
 
 // Photo Data
 const photos = Array(400).fill().map(() => ({
@@ -127,9 +129,67 @@ function hideFullsizeImage() {
     }
 }
 
+async function fetchLightroomPhotos() {
+    if (!accessToken) {
+        console.error('No access token available');
+        return;
+    }
+
+    try {
+        const response = await fetch('https://lr.adobe.io/v2/catalogs', {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'X-API-Key': clientId,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch catalogs');
+        }
+
+        const data = await response.json();
+        const catalogId = data.resources[0].id;
+
+        const assetsResponse = await fetch(`https://lr.adobe.io/v2/catalogs/${catalogId}/assets?limit=400`, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'X-API-Key': clientId,
+            },
+        });
+
+        if (!assetsResponse.ok) {
+            throw new Error('Failed to fetch assets');
+        }
+
+        const assetsData = await assetsResponse.json();
+        photos = assetsData.resources.map(asset => ({
+            src: asset.links.fullsize.href,
+            alt: asset.payload.name || 'Lightroom Photo'
+        }));
+
+        // Clear existing photos and create new elements
+        photoGrid.innerHTML = '';
+        createPhotoElements();
+    } catch (error) {
+        console.error('Error fetching Lightroom photos:', error);
+    }
+}
+
 // Event Listeners
 createPhotoElements();
 photoGrid.addEventListener('mousemove', handleMouseMove);
 photoGrid.addEventListener('mouseleave', handleMouseLeave);
 photoGrid.addEventListener('click', showFullsizeImage);
 fullsizeContainer.addEventListener('click', hideFullsizeImage);
+
+loginButton.addEventListener('click', () => {
+    window.location.href = getAuthUrl();
+});
+
+window.addEventListener('load', () => {
+    const newAccessToken = handleAuthRedirect();
+    if (newAccessToken) {
+        accessToken = newAccessToken;
+        fetchLightroomPhotos();
+    }
+});
