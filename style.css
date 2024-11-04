@@ -16,22 +16,14 @@ body {
     justify-content: center;
     width: 80vw;
     margin: 0 auto;
-    padding: 20px; /* Add some padding inside the border */
-    border: 5px solid #333; /* Add a border */
-    border-radius: 10px; /* Add rounded corners */
-    background-color: #ffffff66; /* Optional: add a background color */
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Optional: add a subtle shadow */
+    padding: 20px;
+    border: 5px solid #333;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
-@media (max-width: 768px) {
-    .photo-grid {
-        width: 90vw;
-        padding: 10px;
-    }
-}
-
-/* Photo Grid Styles */
 .photo-grid img {
     width: 30px;
     height: 30px;
@@ -66,39 +58,19 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-#fullsize-container.visible {
-    opacity: 1;
-    pointer-events: auto;
 }
 
 #fullsize-image {
-    max-width: none;
-    max-height: none;
-    object-fit: cover;
-    transition: all 0.3s ease;
-    border: 10px solid black;
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    transition: opacity 0.3s ease;
 }
 
-#fullsize-image.closing {
-    border: none !important;
-}
-
-
-.photo-grid.loading {
-    position: relative;
-    min-height: 200px;
-}
-
-.photo-grid.loading::after {
-    content: 'Loading photos...';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.2em;
-    color: #333;
+/* Media Query for smaller screens */
+@media (max-width: 768px) {
+    .photo-grid {
+        width: 90vw;
+        padding: 10px;
+    }
 }
