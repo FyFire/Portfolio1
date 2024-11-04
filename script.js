@@ -140,10 +140,12 @@ async function fetchLightroomPhotos() {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to fetch catalogs');
+            throw new Error(`Failed to fetch catalogs: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log('Catalogs data:', data);  // Log the response to see what we're getting
+
         const catalogId = data.resources[0].id;
 
         // Get assets
