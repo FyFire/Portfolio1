@@ -6,7 +6,17 @@ const scope = 'openid,lr_partner_apis';
 function getAuthUrl() {
     const state = generateRandomState();
     localStorage.setItem('oauth_state', state);
-    return `https://ims-na1.adobelogin.com/ims/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=token&state=${state}`;
+    
+    // Updated authorization URL with correct parameters
+    const authUrl = `https://ims-na1.adobelogin.com/ims/authorize/v2`
+        + `?client_id=${clientId}`
+        + `&redirect_uri=${encodeURIComponent(redirectUri)}`
+        + `&scope=${encodeURIComponent(scope)}`
+        + `&response_type=token`
+        + `&state=${state}`
+        + `&response_mode=hash`;
+    
+    return authUrl;
 }
 
 function generateRandomState() {
