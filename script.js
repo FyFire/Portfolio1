@@ -2,8 +2,6 @@
 const photoGrid = document.querySelector('.photo-grid');
 const fullsizeContainer = document.getElementById('fullsize-container');
 const fullsizeImage = document.getElementById('fullsize-image');
-const loginButton = document.getElementById('login-button');
-let accessToken = localStorage.getItem('access_token');
 
 // Photo Data
 const photos = Array(400).fill().map(() => ({
@@ -181,15 +179,3 @@ photoGrid.addEventListener('mousemove', handleMouseMove);
 photoGrid.addEventListener('mouseleave', handleMouseLeave);
 photoGrid.addEventListener('click', showFullsizeImage);
 fullsizeContainer.addEventListener('click', hideFullsizeImage);
-
-loginButton.addEventListener('click', () => {
-    window.location.href = getAuthUrl();
-});
-
-window.addEventListener('load', () => {
-    const newAccessToken = handleAuthRedirect();
-    if (newAccessToken) {
-        accessToken = newAccessToken;
-        fetchLightroomPhotos();
-    }
-});
