@@ -126,35 +126,26 @@ class GoogleDrivePhotoManager {
     showFullsizeImage(event) {
         if (event.target.tagName === 'IMG') {
             const clickedImg = event.target;
+            console.log('Fullsize URL:', clickedImg.dataset.fullsize);
             
             // Set the source and display the container
             this.fullsizeImage.src = clickedImg.dataset.fullsize;
             this.fullsizeContainer.style.display = 'flex';
             document.body.style.overflow = 'hidden';
-            
-            // Add loading state
-            this.fullsizeImage.style.opacity = '0';
-            this.fullsizeContainer.classList.add('loading');
-            
-            this.fullsizeImage.onload = () => {
-                this.fullsizeContainer.classList.remove('loading');
-                this.fullsizeImage.style.opacity = '1';
-            };
     
+            // Add error handling
             this.fullsizeImage.onerror = (e) => {
-                console.error('Error loading image:', e);
-                this.fullsizeContainer.classList.remove('loading');
-                alert('Failed to load full-size image. Please try again.');
-                this.hideFullsizeImage();
-            };
+            console.error('Failed to load full-size image:', e);
+            alert('Failed to load full-size image. Please try again.');
+            this.hideFullsizeImage();
+        };
         }
     }
 
-    hideFullsizeImage(event) {
-        if (event && event.target === this.fullsizeContainer) {
-            this.fullsizeContainer.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
+    hideFullsizeImage() {
+        this.fullsizeContainer.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        this.fullsizeImage.src = ''; // Clear the image source
     }
 }
 
