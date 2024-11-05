@@ -1,76 +1,12 @@
-// DOM Elements
-const photoGrid = document.querySelector('.photo-grid');
-const fullsizeContainer = document.getElementById('fullsize-container');
-const fullsizeImage = document.getElementById('fullsize-image');
-
-class GoogleDrivePhotoManager {
+class PhotoManager {
     constructor() {
-        this.API_KEY = 'AIzaSyD-dKVQFdBgiZJdNQhXyeVCUr2pRtLND7Y';
-        this.FOLDER_ID = '1OiGiw1TE3auGLwQE9-WgtaO7HzWaJTMu';
         this.photoGrid = document.querySelector('.photo-grid');
         this.fullsizeContainer = document.getElementById('fullsize-container');
         this.fullsizeImage = document.getElementById('fullsize-image');
     }
 
-    async initialize() {
-        try {
-            await this.loadGoogleAPI();
-            await this.loadPhotosFromDrive();
-            this.setupEventListeners();
-        } catch (error) {
-            console.error('Error initializing:', error);
-        }
-    }
-
-    loadGoogleAPI() {
-        return new Promise((resolve, reject) => {
-            gapi.load('client', async () => {
-                try {
-                    await gapi.client.init({
-                        apiKey: this.API_KEY,
-                        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-                    });
-                    resolve();
-                } catch (error) {
-                    reject(error);
-                }
-            });
-        });
-    }
-
-    async loadPhotosFromDrive() {
-        try {
-            const response = await gapi.client.drive.files.list({
-                q: `'${this.FOLDER_ID}' in parents and mimeType contains 'image/'`,
-                fields: 'files(id, name, thumbnailLink)',
-                orderBy: 'name'
-            });
-    
-            const files = response.result.files;
-            this.displayPhotos(files);
-        } catch (error) {
-            console.error('Error loading photos:', error);
-            this.photoGrid.innerHTML = 'Error loading photos. Please try again later.';
-        }
-    }
-
-    displayPhotos(files) {
-        files.forEach(file => {
-            const imgElement = document.createElement('img');
-            imgElement.src = this.getThumbnailUrl(file.id);
-            imgElement.dataset.fullsize = this.getFullsizeUrl(file.id);
-            imgElement.alt = file.name;
-            imgElement.classList.add('scaled-down');
-            this.photoGrid.appendChild(imgElement);
-        });
-    }
-
-    getThumbnailUrl(fileId) {
-        return `https://drive.google.com/thumbnail?id=${fileId}&sz=w200`;
-    }
-    
-    getFullsizeUrl(fileId) {
-        return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    initialize() {
+        this.setupEventListeners();
     }
 
     setupEventListeners() {
@@ -78,11 +14,7 @@ class GoogleDrivePhotoManager {
         this.photoGrid.addEventListener('mouseleave', this.handleMouseLeave.bind(this));
         this.photoGrid.addEventListener('click', this.showFullsizeImage.bind(this));
         this.fullsizeContainer.addEventListener('click', this.hideFullsizeImage.bind(this));
-        
-        // Prevent image click from triggering container click
-        this.fullsizeImage.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
+        this.fullsizeImage.addEventListener('click', (e) => e.stopPropagation());
     }
 
     handleMouseMove(event) {
@@ -90,25 +22,17 @@ class GoogleDrivePhotoManager {
         const mouseX = event.clientX - gridRect.left;
         const mouseY = event.clientY - gridRect.top;
 
-        const images = this.photoGrid.querySelectorAll('img');
-        images.forEach(img => {
+        this.photoGrid.querySelectorAll('img').forEach(img => {
             const imgRect = img.getBoundingClientRect();
             const imgX = imgRect.left - gridRect.left + imgRect.width / 2;
             const imgY = imgRect.top - gridRect.top + imgRect.height / 2;
 
-            const distX = mouseX - imgX;
-            const distY = mouseY - imgY;
-            const distance = Math.sqrt(distX * distX + distY * distY);
+            const distance = Math.hypot(mouseX - imgX, mouseY - imgY);
 
             const maxDistance = 150;
-            const minOpacity = 0.8;
-            const maxOpacity = 1;
-
             const attenuationFactor = Math.max(0, 1 - (distance / maxDistance));
-            const baseScale = 0.5;
-            const maxScale = 2;
-            const scaleFactor = baseScale + ((maxScale - baseScale) * attenuationFactor);
-            const opacity = minOpacity + ((maxOpacity - minOpacity) * attenuationFactor);
+            const scaleFactor = 0.5 + (1.5 * attenuationFactor);
+            const opacity = 0.8 + (0.2 * attenuationFactor);
 
             img.style.transform = `scale(${scaleFactor})`;
             img.style.opacity = opacity;
@@ -116,43 +40,34 @@ class GoogleDrivePhotoManager {
     }
 
     handleMouseLeave() {
-        const images = this.photoGrid.querySelectorAll('img');
-        images.forEach(img => {
+        this.photoGrid.querySelectorAll('img').forEach(img => {
             img.style.transform = 'scale(0.5)';
-            img.style.opacity = 0.8;
+            img.style.opacity = '0.8';
         });
     }
 
     showFullsizeImage(event) {
         if (event.target.tagName === 'IMG') {
             const clickedImg = event.target;
-            console.log('Fullsize URL:', clickedImg.dataset.fullsize);
-            
-            // Set the source and display the container
-            this.fullsizeImage.src = clickedImg.dataset.fullsize;
+            this.fullsizeImage.src = clickedImg.dataset.fullsize || clickedImg.src;
             this.fullsizeContainer.style.display = 'flex';
             document.body.style.overflow = 'hidden';
-    
-            // Add error handling
-            this.fullsizeImage.onerror = (e) => {
-            console.error('Failed to load full-size image:', e);
-            alert('Failed to load full-size image. Please try again.');
-            this.hideFullsizeImage();
-        };
+
+            this.fullsizeImage.onerror = () => {
+                console.error('Failed to load full-size image');
+                alert('Failed to load full-size image. Please try again.');
+                this.hideFullsizeImage();
+            };
         }
     }
 
     hideFullsizeImage() {
         this.fullsizeContainer.style.display = 'none';
         document.body.style.overflow = 'auto';
-        this.fullsizeImage.src = ''; // Clear the image source
+        this.fullsizeImage.src = '';
     }
 }
 
-// Initialize the photo manager
-const photoManager = new GoogleDrivePhotoManager();
-
-// Wait for DOM to load
 document.addEventListener('DOMContentLoaded', () => {
-    photoManager.initialize();
+    new PhotoManager().initialize();
 });
